@@ -1,6 +1,8 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.MetaStatsDto;
+import com.example.backend.dto.PairWinDto;
+import com.example.backend.repository.StatsRepository;
 import com.example.backend.service.StatsService;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -16,6 +18,7 @@ import java.util.List;
 public class StatsController {
 
     private final StatsService statsService;
+    private final StatsRepository statsRepository;
 
     @GetMapping("/deck/{deckId}/by-meta")
     public ResponseEntity<List<MetaStatsDto>> statsByDeck(
@@ -25,5 +28,15 @@ public class StatsController {
             @RequestParam(required = false, defaultValue = "true") boolean includeNoMeta
     ) {
         return ResponseEntity.ok(statsService.getStatsByDeck(deckId, fromDate, toDate, includeNoMeta));
+    }
+
+    @GetMapping("/deck/matrix")
+    public ResponseEntity<List<PairWinDto>> winrateMatrix(
+            @RequestParam(required = false) List<Long> deckIds,
+            @RequestParam(required = false) List<Long> opponentIds,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
+    ) {
+        return ResponseEntity.ok(statsRepository.findWinratesByDecksAndOpponents(deckIds, opponentIds, fromDate, toDate));
     }
 }
