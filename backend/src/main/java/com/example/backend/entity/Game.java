@@ -30,6 +30,9 @@ public class Game {
     @Column(nullable = false, length = 10)
     private GameResult result;
 
+    @Column(columnDefinition = "text")
+    private String notes;
+
     @CreationTimestamp
     @Column(name = "creation_date", nullable = false, updatable = false)
     private OffsetDateTime creationDate;
