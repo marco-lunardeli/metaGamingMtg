@@ -85,21 +85,27 @@ public class CsvImportService {
                     continue;
                 }
 
-                // procurar decks
-                Optional<Deck> deckOpt = deckRepo.findByNameIgnoreCase(deckName == null ? "" : deckName.trim());
-                Optional<OpponentDeck> oppOpt = opponentRepo.findByNameIgnoreCase(opponentDeckName == null ? "" : opponentDeckName.trim());
+                // procurar decks — criar automaticamente se ausente
+                Deck deck = deckRepo.findByNameIgnoreCase(deckName == null ? "" : deckName.trim())
+                        .orElseGet(() -> {
+                            Deck d = Deck.builder()
+                                    .name(deckName == null ? "unknown" : deckName.trim())
+                                    .version(1)
+                                    .build();
+                            deckRepo.save(d);
+                            errors.add("Linha " + lines + ": Deck criado automaticamente -> " + d.getName());
+                            return d;
+                        });
 
-                if (deckOpt.isEmpty()) {
-                    errors.add("Linha " + lines + ": Deck não encontrado -> " + deckName);
-                    continue;
-                }
-                if (oppOpt.isEmpty()) {
-                    errors.add("Linha " + lines + ": OpponentDeck não encontrado -> " + opponentDeckName);
-                    continue;
-                }
-
-                Deck deck = deckOpt.get();
-                OpponentDeck opponentDeck = oppOpt.get();
+                OpponentDeck opponentDeck = opponentRepo.findByNameIgnoreCase(opponentDeckName == null ? "" : opponentDeckName.trim())
+                        .orElseGet(() -> {
+                            OpponentDeck od = OpponentDeck.builder()
+                                    .name(opponentDeckName == null ? "unknown" : opponentDeckName.trim())
+                                    .build();
+                            opponentRepo.save(od);
+                            errors.add("Linha " + lines + ": OpponentDeck criado automaticamente -> " + od.getName());
+                            return od;
+                        });
 
                 // meta: loja + evento
                 String metaName = buildMetaName(loja, evento);
